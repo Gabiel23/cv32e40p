@@ -619,7 +619,11 @@ package cv32e40p_pkg;
   // operand c selection
   parameter OP_C_REGC_OR_FWD = 2'b00;
   parameter OP_C_REGB_OR_FWD = 2'b01;
-  parameter OP_C_JT = 2'b10;
+  parameter OP_C_JT          = 2'b10;
+  parameter OP_C_IMM         = 2'b11;
+
+  // immediate c selection
+  parameter IMMC_S = 1'b0;
 
   // branch types
   parameter BRANCH_NONE = 2'b00;

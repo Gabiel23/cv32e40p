@@ -85,9 +85,16 @@ module cv32e40p_decoder import cv32e40p_pkg::*; import cv32e40p_apu_core_pkg::*;
   output logic        scalar_replication_c_o,  // scalar replication enable for operand C
   output logic [0:0]  imm_a_mux_sel_o,         // immediate selection for operand a
   output logic [3:0]  imm_b_mux_sel_o,         // immediate selection for operand b
+  
+  // AES
+  output logic [3:0]  imm_c_mux_sel_o,
+
   output logic [1:0]  regc_mux_o,              // register c selection: S3, RD or 0
   output logic        is_clpx_o,               // whether the instruction is complex (pulpv3) or not
   output logic        is_subrot_o,
+
+  //AES related control signals
+  output logic        aes_en_o,
 
   // MUL related control signals
   output mul_opcode_e mult_operator_o,         // Multiplication operation selection
@@ -168,6 +175,9 @@ module cv32e40p_decoder import cv32e40p_pkg::*; import cv32e40p_apu_core_pkg::*;
   logic       mult_dot_en;
   logic       apu_en;
 
+  //AES
+  logic       aes_en;
+
   // this instruction needs floating-point rounding-mode verification
   logic check_fprm;
 
@@ -203,6 +213,10 @@ module cv32e40p_decoder import cv32e40p_pkg::*; import cv32e40p_apu_core_pkg::*;
     regc_mux_o                  = REGC_ZERO;
     imm_a_mux_sel_o             = IMMA_ZERO;
     imm_b_mux_sel_o             = IMMB_I;
+    imm_c_mux_sel_o             = IMMB_I;
+
+    //AES
+    aes_en                      = 1'b0;
 
     mult_operator_o             = MUL_I;
     mult_int_en                 = 1'b0;
@@ -408,11 +422,18 @@ module cv32e40p_decoder import cv32e40p_pkg::*; import cv32e40p_apu_core_pkg::*;
             2'b00: data_type_o = 2'b10; // SB
             2'b01: data_type_o = 2'b01; // SH
             2'b10: data_type_o = 2'b00; // SW
-            default: begin
-              data_req       = 1'b0;
-              data_we_o      = 1'b0;
-              illegal_insn_o = 1'b1;
-            end
+	    2'b11:
+		begin
+			alu_en              = 1'b0;
+			aes_en              = 1'b1;
+
+			alu_op_b_mux_sel_o  = OP_B_REGB_OR_FWD;
+			imm_c_mux_sel_o     = IMMC_S;
+			alu_op_c_mux_sel_o  = OP_C_IMM; 
+
+			data_req 	    = 1'b0;
+			data_we_o 	    = 1'b0;
+		end
           endcase
         end else begin
           illegal_insn_o = 1'b1;
@@ -2939,6 +2960,8 @@ module cv32e40p_decoder import cv32e40p_pkg::*; import cv32e40p_apu_core_pkg::*;
   assign hwlp_we_o                   = (deassert_we_i) ? 3'b0          : hwlp_we;
   assign csr_op_o                    = (deassert_we_i) ? CSR_OP_READ   : csr_op;
   assign ctrl_transfer_insn_in_id_o  = (deassert_we_i) ? BRANCH_NONE   : ctrl_transfer_insn;
+
+  assign aes_en_o                    = (deassert_we_i) ? 1'b0          : aes_en;
 
   assign ctrl_transfer_insn_in_dec_o  = ctrl_transfer_insn;
   assign regfile_alu_we_dec_o         = regfile_alu_we;

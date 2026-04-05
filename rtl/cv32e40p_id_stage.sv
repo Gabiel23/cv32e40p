@@ -320,6 +320,8 @@ module cv32e40p_id_stage
 
   logic [31:0] imm_a;  // contains the immediate for operand b
   logic [31:0] imm_b;  // contains the immediate for operand b
+  // AES
+  logic [31:0] imm_c;
 
   logic [31:0] jump_target;  // calculated jump target (-> EX -> IF)
 
@@ -359,6 +361,8 @@ module cv32e40p_id_stage
 
   logic [0:0] imm_a_mux_sel;
   logic [3:0] imm_b_mux_sel;
+  logic [3:0] imm_c_mux_sel;
+
   logic [1:0] ctrl_transfer_target_mux_sel;
 
   // Multiplier Control
@@ -370,6 +374,9 @@ module cv32e40p_id_stage
   logic mult_dot_en;  // use dot product
   logic [1:0] mult_dot_signed;  // Signed mode dot products (can be mixed types)
 
+  //AES
+  logic aes_en;
+  
   // FPU signals
   logic [cv32e40p_fpu_pkg::FP_FORMAT_BITS-1:0] fpu_src_fmt;
   logic [cv32e40p_fpu_pkg::FP_FORMAT_BITS-1:0] fpu_dst_fmt;
@@ -705,12 +712,20 @@ module cv32e40p_id_stage
   //       |_|                                        //
   //////////////////////////////////////////////////////
 
+  always_comb begin : immediate_c_mux
+    unique case (imm_c_mux_sel)
+      IMMC_S:	    imm_c = imm_s_type;
+      default:	    imm_c = imm_s_type;
+    endcase      
+  end
+
   // ALU OP C Mux
   always_comb begin : alu_operand_c_mux
     case (alu_op_c_mux_sel)
       OP_C_REGC_OR_FWD: operand_c = operand_c_fw_id;
       OP_C_REGB_OR_FWD: operand_c = operand_b_fw_id;
       OP_C_JT:          operand_c = jump_target;
+      OP_C_IMM:         operand_c = imm_c;
       default:          operand_c = operand_c_fw_id;
     endcase  // case (alu_op_c_mux_sel)
   end
@@ -1005,6 +1020,7 @@ module cv32e40p_id_stage
       .scalar_replication_c_o(scalar_replication_c),
       .imm_a_mux_sel_o       (imm_a_mux_sel),
       .imm_b_mux_sel_o       (imm_b_mux_sel),
+      .imm_c_mux_sel_o       (imm_c_mux_sel),
       .regc_mux_o            (regc_mux),
       .is_clpx_o             (is_clpx),
       .is_subrot_o           (is_subrot),
@@ -1017,6 +1033,9 @@ module cv32e40p_id_stage
       .mult_imm_mux_o    (mult_imm_mux),
       .mult_dot_en_o     (mult_dot_en),
       .mult_dot_signed_o (mult_dot_signed),
+
+      //AES signals
+      .aes_en_o	(aes_en),
 
       // FPU / APU signals
       .frm_i        (frm_i),
@@ -1525,6 +1544,12 @@ module cv32e40p_id_stage
           mult_clpx_shift_ex_o <= instr[14:13];
           mult_clpx_img_ex_o   <= instr[25];
         end
+
+	//AES Operands
+	if(aes_en)
+	begin
+
+	end
 
         // APU pipeline
         apu_en_ex_o <= apu_en;
