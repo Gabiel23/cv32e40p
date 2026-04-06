@@ -133,6 +133,12 @@ module cv32e40p_id_stage
     output logic [ 1:0] mult_clpx_shift_ex_o,
     output logic        mult_clpx_img_ex_o,
 
+    output aes_opcode_e aes_operator_ex_o,
+    output logic 	aes_en_ex_o,
+    output logic [31:0] aes_op_a_ex_o,
+    output logic [31:0] aes_op_b_ex_o,
+    output logic [31:0] aes_op_c_ex_o,
+
     // APU
     output logic                              apu_en_ex_o,
     output logic [     APU_WOP_CPU-1:0]       apu_op_ex_o,
@@ -376,6 +382,7 @@ module cv32e40p_id_stage
 
   //AES
   logic aes_en;
+  aes_opcode_e aes_operator;  
   
   // FPU signals
   logic [cv32e40p_fpu_pkg::FP_FORMAT_BITS-1:0] fpu_src_fmt;
@@ -1035,7 +1042,8 @@ module cv32e40p_id_stage
       .mult_dot_signed_o (mult_dot_signed),
 
       //AES signals
-      .aes_en_o	(aes_en),
+      .aes_en_o		 (aes_en),
+      .aes_operator_o	 (aes_operator),
 
       // FPU / APU signals
       .frm_i        (frm_i),
@@ -1452,6 +1460,11 @@ module cv32e40p_id_stage
       mult_clpx_shift_ex_o   <= 2'b0;
       mult_clpx_img_ex_o     <= 1'b0;
 
+      aes_op_a_ex_o	     <= '0;
+      aes_op_b_ex_o	     <= '0;
+      aes_op_c_ex_o	     <= '0;
+      aes_operator_ex_o	     <= AES_OP_STORE;
+      
       apu_en_ex_o            <= '0;
       apu_op_ex_o            <= '0;
       apu_lat_ex_o           <= '0;
@@ -1546,7 +1559,12 @@ module cv32e40p_id_stage
         end
 
 	//AES Operands
+	aes_en_ex_o <= aes_en;
 	if(aes_en)
+	  aes_op_a_ex_o	    <= alu_operand_a;
+  	  aes_op_b_ex_o	    <= alu_operand_b;
+	  aes_op_c_ex_o     <= alu_operand_c;
+	  aes_operator_ex_o <= aes_operator;
 	begin
 
 	end

@@ -95,6 +95,7 @@ module cv32e40p_decoder import cv32e40p_pkg::*; import cv32e40p_apu_core_pkg::*;
 
   //AES related control signals
   output logic        aes_en_o,
+  output aes_opcode_e aes_operator_o,
 
   // MUL related control signals
   output mul_opcode_e mult_operator_o,         // Multiplication operation selection
@@ -217,7 +218,8 @@ module cv32e40p_decoder import cv32e40p_pkg::*; import cv32e40p_apu_core_pkg::*;
 
     //AES
     aes_en                      = 1'b0;
-
+    aes_operator_o		= AES_OP_STORE;
+    
     mult_operator_o             = MUL_I;
     mult_int_en                 = 1'b0;
     mult_dot_en                 = 1'b0;

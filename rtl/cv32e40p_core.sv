@@ -196,6 +196,13 @@ module cv32e40p_core
   logic        [                 1:0]       mult_clpx_shift_ex;
   logic                                     mult_clpx_img_ex;
 
+  // AES Control
+  logic					    aes_en_ex;
+  aes_opcode_e				    aes_operator_ex;
+  logic        [                31:0]	    aes_op_a_ex;
+  logic        [                31:0]       aes_op_b_ex;
+  logic        [                31:0]       aes_op_c_ex;
+
   // FPU
   logic        [            C_RM-1:0]       frm_csr;
   logic        [         C_FFLAG-1:0]       fflags_csr;
@@ -610,6 +617,12 @@ module cv32e40p_core
       .mult_clpx_shift_ex_o(mult_clpx_shift_ex),  // from ID to EX stage
       .mult_clpx_img_ex_o  (mult_clpx_img_ex),  // from ID to EX stage
 
+      // AES
+      .aes_en_ex_o	   (aes_en_ex),
+      .aes_operator_ex_o   (aes_operator_ex),
+      .aes_op_a_ex_o	   (aes_op_a_ex),
+      .aes_op_b_ex_o	   (aes_op_b_ex),
+      .aes_op_c_ex_o	   (aes_op_c_ex),
       // FPU
       .frm_i(frm_csr),
 
@@ -783,7 +796,12 @@ module cv32e40p_core
       .mult_clpx_img_i   (mult_clpx_img_ex),  // from ID/EX pipe registers
 
       .mult_multicycle_o(mult_multicycle),  // to ID/EX pipe registers
-
+      // AES
+      .aes_en_i	           (aes_en_ex),
+      .aes_operator_i      (aes_operator_ex),
+      .aes_operand_a_i     (aes_op_a_ex),
+      .aes_operand_b_i	   (aes_op_b_ex),
+      .aes_operand_c_i	   (aes_op_c_ex),
       // FPU
       .fpu_fflags_we_o(fflags_we),
 

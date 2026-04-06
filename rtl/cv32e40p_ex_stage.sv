@@ -75,8 +75,15 @@ module cv32e40p_ex_stage
     input logic        mult_clpx_img_i,
 
     output logic mult_multicycle_o,
+   
+    // AES
+    input aes_opcode_e        aes_operator_i,
+    input logic	       [31:0] aes_operand_a_i,
+    input logic        [31:0] aes_operand_b_i,
+    input logic        [31:0] aes_operand_c_i,
+    input logic               aes_en_i, 
 
-    // FPU signals
+    // FPU signals   
     output logic fpu_fflags_we_o,
 
     // APU signals
@@ -155,6 +162,10 @@ module cv32e40p_ex_stage
   logic [31:0] alu_result;
   logic [31:0] mult_result;
   logic        alu_cmp_result;
+
+  // AES output
+  logic [31:0] aes_rdata_a;
+  logic [31:0] aes_rdata_b;
 
   logic        regfile_we_lsu;
   logic [ 5:0] regfile_waddr_lsu;
@@ -299,6 +310,20 @@ module cv32e40p_ex_stage
       .ready_o     (mult_ready),
       .ex_ready_i  (ex_ready_o)
   );
+
+  cv32e40p_aes_unit aes_unit_i (
+      .clk_i           (clk),
+      .rst_ni          (rst_n),
+      .aes_en_i        (aes_en_i),
+      .aes_op_i        (aes_operator_i),
+      .aes_offset_i    (aes_operand_c_i[1:0]),
+      .aes_result_sel_i(1'b0),
+      .aes_wdata_a_i   (aes_operand_a_i),
+      .aes_wdata_b_i   (aes_operand_b_i),
+      .aes_rdata_a_o   (aes_rdata_a),
+      .aes_rdata_b_o   (aes_rdata_b)
+  );
+
 
   generate
     if (FPU == 1) begin : gen_apu

@@ -180,6 +180,16 @@ package cv32e40p_pkg;
 
   } mul_opcode_e;
 
+  // AES operation
+  parameter AES_OP_WIDTH = 2;
+
+  typedef enum logic [AES_OP_WIDTH-1:0] {
+    AES_OP_STORE   = 2'b00,
+    AES_OP_LOAD    = 2'b01,
+    AES_OP_ENCRYPT = 2'b10,
+    AES_OP_DECRYPT = 2'b11
+  } aes_opcode_e;
+
   // vector modes
   parameter VEC_MODE32 = 2'b00;
   parameter VEC_MODE16 = 2'b10;
