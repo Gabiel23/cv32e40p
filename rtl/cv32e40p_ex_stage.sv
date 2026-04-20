@@ -167,6 +167,11 @@ module cv32e40p_ex_stage
   logic [31:0] aes_rdata_a;
   logic [31:0] aes_rdata_b;
 
+  // AES EX/WB pipeline
+  logic        aes_load_phase;
+  logic        aes_load_phase_q;
+  logic [31:0] aes_rdata_a_q;
+
   logic        regfile_we_lsu;
   logic [ 5:0] regfile_waddr_lsu;
 
@@ -209,14 +214,17 @@ module cv32e40p_ex_stage
       if (alu_en_i) regfile_alu_wdata_fw_o = alu_result;
       if (mult_en_i) regfile_alu_wdata_fw_o = mult_result;
       if (csr_access_i) regfile_alu_wdata_fw_o = csr_rdata_i;
+      if (aes_en_i) regfile_alu_wdata_fw_o = aes_rdata_b;
     end
   end
+
+  assign aes_load_phase = aes_en_i && (aes_operator_i == AES_OP_LOAD);
 
   // LSU write port mux
   always_comb begin
     regfile_we_wb_o    = 1'b0;
     regfile_waddr_wb_o = regfile_waddr_lsu;
-    regfile_wdata_wb_o = lsu_rdata_i;
+    regfile_wdata_wb_o = (aes_load_phase_q) ? aes_rdata_a_q : lsu_rdata_i;
     wb_contention_lsu  = 1'b0;
 
     if (regfile_we_lsu) begin
@@ -326,7 +334,7 @@ module cv32e40p_ex_stage
       .aes_en_i        (aes_en_i),
       .aes_op_i        (aes_operator_i),
       .aes_offset_i    (aes_operand_c_i[1:0]),
-      .aes_result_sel_i(1'b0),
+      .aes_result_sel_i(aes_operand_c_i[0]),
       .aes_wdata_a_i   (aes_operand_a_i),
       .aes_wdata_b_i   (aes_operand_b_i),
       .aes_rdata_a_o   (aes_rdata_a),
@@ -425,12 +433,18 @@ module cv32e40p_ex_stage
     if (~rst_n) begin
       regfile_waddr_lsu <= '0;
       regfile_we_lsu    <= 1'b0;
+      aes_load_phase_q  <= 1'b0;
+      aes_rdata_a_q     <= '0;
     end else begin
       if (ex_valid_o) // wb_ready_i is implied
       begin
-        regfile_we_lsu <= regfile_we_i & ~lsu_err_i;
-        if (regfile_we_i & ~lsu_err_i) begin
+        regfile_we_lsu   <= regfile_we_i & ~lsu_err_i;
+        aes_load_phase_q <= aes_load_phase;
+	if (regfile_we_i & ~lsu_err_i) begin
           regfile_waddr_lsu <= regfile_waddr_i;
+        end
+	if (aes_load_phase) begin
+          aes_rdata_a_q <= aes_rdata_a;
         end
       end else if (wb_ready_i) begin
         // we are ready for a new instruction, but there is none available,

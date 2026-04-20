@@ -722,6 +722,7 @@ module cv32e40p_id_stage
   always_comb begin : immediate_c_mux
     unique case (imm_c_mux_sel)
       IMMC_S:	    imm_c = imm_s_type;
+      IMMC_I:       imm_c = imm_i_type;
       default:	    imm_c = imm_s_type;
     endcase      
   end

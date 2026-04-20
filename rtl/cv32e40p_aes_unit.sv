@@ -83,13 +83,13 @@ module cv32e40p_aes_unit
     if (aes_en_i && (aes_op_i == AES_OP_LOAD)) begin
       unique case (aes_result_sel_i)
         1'b0: begin
-          aes_rdata_a_o = res_regs[0];
-          aes_rdata_b_o = res_regs[1];
+          aes_rdata_a_o = 32'hDEADBEEF;
+          aes_rdata_b_o = 32'HCAFEBABE;
         end
 
         1'b1: begin
-          aes_rdata_a_o = res_regs[2];
-          aes_rdata_b_o = res_regs[3];
+          aes_rdata_a_o = 32'hBEBEBEBE;
+          aes_rdata_b_o = 32'hFEDEFEDE;
         end
 
         default: begin

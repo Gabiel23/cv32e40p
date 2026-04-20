@@ -112,6 +112,7 @@ package cv32e40p_pkg;
     ALU_BREV  = 7'b1001001,
 
     // Bit counting
+
     ALU_FF1 = 7'b0110110,
     ALU_FL1 = 7'b0110111,
     ALU_CNT = 7'b0110100,
@@ -634,6 +635,7 @@ package cv32e40p_pkg;
 
   // immediate c selection
   parameter IMMC_S = 1'b0;
+  parameter IMMC_I = 1'b1;
 
   // branch types
   parameter BRANCH_NONE = 2'b00;

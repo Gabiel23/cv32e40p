@@ -509,8 +509,20 @@ module cv32e40p_decoder import cv32e40p_pkg::*; import cv32e40p_apu_core_pkg::*;
           end
 
           if (instr_rdata_i[14:12] == 3'b011) begin
-            // LD -> RV64 only
-            illegal_insn_o = 1'b1;
+            alu_en = 1'b0;
+	    aes_en = 1'b1;
+            aes_operator_o  = AES_OP_LOAD;
+            data_req        = 1'b1;
+            regfile_mem_we  = 1'b1;
+
+	    alu_op_c_mux_sel_o  = OP_C_IMM;
+            imm_c_mux_sel_o     = IMMC_I;
+
+	    
+	    regfile_alu_waddr_sel_o = 1'b0;	// waddr_alu = rs1 && waddr_wb = rd
+	    regfile_mem_we 	    = 1'b1;
+	    regfile_alu_we          = 1'b1;
+
           end
         end else begin
           illegal_insn_o = 1'b1;
