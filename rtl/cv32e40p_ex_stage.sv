@@ -164,6 +164,12 @@ module cv32e40p_ex_stage
   logic        alu_cmp_result;
 
   // AES output
+  logic        aes_ready;
+  logic        aes_busy;
+  logic        aes_done;
+  logic        aes_multicycle;
+  logic        aes_stall;
+
   logic [31:0] aes_rdata_a;
   logic [31:0] aes_rdata_b;
 
@@ -219,6 +225,11 @@ module cv32e40p_ex_stage
   end
 
   assign aes_load_phase = aes_en_i && (aes_operator_i == AES_OP_LOAD);
+  assign aes_multicycle = aes_en_i &&
+                          ((aes_operator_i == AES_OP_ENCRYPT) ||
+                           (aes_operator_i == AES_OP_DECRYPT));
+
+  assign aes_stall = aes_multicycle | aes_busy;
 
   // LSU write port mux
   always_comb begin
@@ -338,7 +349,9 @@ module cv32e40p_ex_stage
       .aes_wdata_a_i   (aes_operand_a_i),
       .aes_wdata_b_i   (aes_operand_b_i),
       .aes_rdata_a_o   (aes_rdata_a),
-      .aes_rdata_b_o   (aes_rdata_b)
+      .aes_rdata_b_o   (aes_rdata_b),
+      .aes_ready_o     (aes_ready),
+      .aes_busy_o      (aes_busy)
   );
 
 

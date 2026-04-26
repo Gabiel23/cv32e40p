@@ -1283,6 +1283,37 @@ module cv32e40p_decoder import cv32e40p_pkg::*; import cv32e40p_apu_core_pkg::*;
               end
             end
 
+	    // AES specific instruction
+	    {6'b00_0011, 3'b101}: begin // aes_encrypt
+  		alu_en         = 1'b0;
+  		aes_en         = 1'b1;
+  		aes_operator_o = AES_OP_ENCRYPT;
+
+  		regfile_alu_we = 1'b0;
+  		regfile_mem_we = 1'b0;
+  		data_req       = 1'b0;
+  		data_we_o      = 1'b0;
+
+  		rega_used_o    = 1'b0;
+  		regb_used_o    = 1'b0;
+  		regc_used_o    = 1'b0;
+	    end
+
+	    {6'b00_0011, 3'b010}: begin // aes_decrypt
+  		alu_en         = 1'b0;
+  		aes_en         = 1'b1;
+  		aes_operator_o = AES_OP_DECRYPT;
+
+  		regfile_alu_we = 1'b0;
+  		regfile_mem_we = 1'b0;
+  		data_req       = 1'b0;
+  		data_we_o      = 1'b0;
+
+  		rega_used_o    = 1'b0;
+  		regb_used_o    = 1'b0;
+  		regc_used_o    = 1'b0;
+	    end
+
             // PULP specific instructions using only one source register
 
             {6'b00_1000, 3'b000}: begin         // Find First 1 - p.ff1
