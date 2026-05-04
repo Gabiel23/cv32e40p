@@ -164,11 +164,7 @@ module cv32e40p_ex_stage
   logic        alu_cmp_result;
 
   // AES output
-  logic        aes_ready;
   logic        aes_busy;
-  logic        aes_done;
-  logic        aes_multicycle;
-  logic        aes_stall;
 
   logic [31:0] aes_rdata_a;
   logic [31:0] aes_rdata_b;
@@ -225,11 +221,6 @@ module cv32e40p_ex_stage
   end
 
   assign aes_load_phase = aes_en_i && (aes_operator_i == AES_OP_LOAD);
-  assign aes_multicycle = aes_en_i &&
-                          ((aes_operator_i == AES_OP_ENCRYPT) ||
-                           (aes_operator_i == AES_OP_DECRYPT));
-
-  assign aes_stall = aes_multicycle | aes_busy;
 
   // LSU write port mux
   always_comb begin
@@ -350,7 +341,6 @@ module cv32e40p_ex_stage
       .aes_wdata_b_i   (aes_operand_b_i),
       .aes_rdata_a_o   (aes_rdata_a),
       .aes_rdata_b_o   (aes_rdata_b),
-      .aes_ready_o     (aes_ready),
       .aes_busy_o      (aes_busy)
   );
 
@@ -470,9 +460,9 @@ module cv32e40p_ex_stage
   // As valid always goes to the right and ready to the left, and we are able
   // to finish branches without going to the WB stage, ex_valid does not
   // depend on ex_ready.
-  assign ex_ready_o = (~apu_stall & alu_ready & mult_ready & lsu_ready_ex_i
+  assign ex_ready_o = (~apu_stall & alu_ready & mult_ready & lsu_ready_ex_i & ~aes_busy
                        & wb_ready_i & ~wb_contention) | (branch_in_ex_i);
-  assign ex_valid_o = (apu_valid | alu_en_i | mult_en_i | csr_access_i | lsu_en_i)
-                       & (alu_ready & mult_ready & lsu_ready_ex_i & wb_ready_i);
+  assign ex_valid_o = (apu_valid | alu_en_i | mult_en_i | csr_access_i | lsu_en_i | aes_en_i)
+                    & (alu_ready & mult_ready & lsu_ready_ex_i & wb_ready_i & ~aes_busy);
 
 endmodule

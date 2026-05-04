@@ -181,6 +181,22 @@ package cv32e40p_pkg;
 
   } mul_opcode_e;
 
+  // AES FSM
+  typedef enum logic [3:0] {
+    AES_IDLE,
+    AES_E_INIT_ADDKEY,
+    AES_E_SUBBYTES,
+    AES_E_SHIFTROWS,
+    AES_E_MIXCOLUMNS,
+    AES_E_ADDROUNDKEY,
+    AES_D_INIT_ADDKEY,
+    AES_D_INVSHIFTROWS,
+    AES_D_INVSUBBYTES,
+    AES_D_ADDROUNDKEY,
+    AES_D_INVMIXCOLUMNS,
+    AES_DONE
+  } aes_phase_e;
+
   // AES operation
   parameter AES_OP_WIDTH = 2;
 
